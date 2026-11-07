@@ -1,0 +1,15 @@
+{
+  "name": "DialogOptionsOffset",
+  "title": "Dialog Options Offset",
+  "author": "Vatroslav",
+  "projectWebsiteURL": "https://github.com/Vatroslav/gothic-1-dialog-mod",
+  "description": "Moves the dialog option lists to the right, so they don't start so far left on ultrawide screens.\n\nAdjust it in Settings > Game > Dialog Options Offset.",
+  "modVersion": "0.1.0",
+  "scriptPreprocessorDefines": [],
+  "tags": [
+    "Enhancement",
+    "Visual"
+  ],
+  "loadOrder": "Normal",
+  "dependencies": []
+}
