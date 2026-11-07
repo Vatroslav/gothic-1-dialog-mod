@@ -34,12 +34,7 @@ class UDialogOptionsOffsetExtension : UGothicModExt_WidgetExtension
     void Tick(FGeometry MyGeometry, float32 InDeltaTime)
     {
         auto Conversation = Cast<UConversationWidget>(GetWidget());
-        if (!IsValid(Conversation))
-            return;
-
-        UWidget TopicList = Conversation.TopicListContainer;
-        UWidget SubTopicList = Conversation.SubTopicListContainer;
-        if (!IsValid(TopicList) || !IsValid(SubTopicList))
+        if (!IsValid(Conversation) || !IsValid(Conversation.TopicListContainer))
             return;
 
         if (!bCaptured)
@@ -50,26 +45,28 @@ class UDialogOptionsOffsetExtension : UGothicModExt_WidgetExtension
 
         float32 Offset = float32(MyGeometry.GetLocalSize().X * UDialogOptionsOffsetSettings.DefaultObject.OffsetPercent.Value * 0.01);
 
-        // Move everything in the box that holds both lists, so whatever sits
-        // above them stays aligned. The children are moved rather than the box
-        // itself because other UI mods reset the box's position every frame.
-        UPanelWidget Box = TopicList.GetParent();
-        if (IsValid(Box) && Box == SubTopicList.GetParent() && Box != Conversation.GetRootWidget())
+        // Both lists and the tooltip above them share one vertical box. Its
+        // children are moved rather than the box itself because other UI mods
+        // reset the box's position every frame.
+        for (auto Child : Conversation.TopicListContainer.GetParent().GetAllChildren())
         {
-            for (auto Child : Box.GetAllChildren())
-                MoveTo(Child, Offset);
-        }
-        else
-        {
-            MoveTo(TopicList, Offset);
-            MoveTo(SubTopicList, Offset);
+            FVector2D Current = Child.RenderTransform.Translation;
+            if (Current.X != Offset)
+                Child.SetRenderTranslation(FVector2D(Offset, Current.Y));
         }
 
         // Only left-aligned speech starts too far left. Centered speech stays put.
+        // Left padding makes the line wrap inside the remaining width, so long
+        // lines stay on screen. A render offset would push them past the edge.
         for (auto Line : SpeechLines)
         {
-            if (IsValid(Line) && Line.Justification == ETextJustify::Left)
-                MoveSpeechLine(Line, Offset);
+            auto Slot = Cast<UBorderSlot>(Line.Slot);
+            if (IsValid(Slot) && Line.Justification == ETextJustify::Left)
+            {
+                FMargin Padding = Slot.GetPadding();
+                Padding.Left = Offset;
+                Slot.SetPadding(Padding);
+            }
         }
     }
 
@@ -77,55 +74,11 @@ class UDialogOptionsOffsetExtension : UGothicModExt_WidgetExtension
     {
         TArray<UWidget> Widgets;
         Conversation.GetAllWidgetsAndDescendants(Widgets);
-
-        // TEMPORARY: the widget layout can't be read outside the game, so write
-        // it to a file while the speech offset is being tested.
-        FString Tree;
         for (auto Item : Widgets)
         {
             auto Line = Cast<URichTextBlock>(Item);
             if (IsValid(Line) && Item.Name.ToString().Contains("DialogueLine"))
                 SpeechLines.Add(Line);
-
-            Tree += Item.Name.ToString() + " | " + Item.Class.Name.ToString()
-                + " | slot: " + (IsValid(Item.Slot) ? Item.Slot.Class.Name.ToString() : "-")
-                + " | parent: " + (IsValid(Item.GetParent()) ? Item.GetParent().Name.ToString() : "-") + "\n";
         }
-        FFileHelper::SaveStringToFile(Tree, System::GetProjectSavedDirectory() + "DialogOptionsOffset-widgets.txt");
-    }
-
-    void MoveTo(UWidget Item, float Offset)
-    {
-        FVector2D Current = Item.RenderTransform.Translation;
-        if (Current.X != Offset)
-            Item.SetRenderTranslation(FVector2D(Offset, Current.Y));
-    }
-
-    // Prefer left padding: the line then wraps inside the remaining width, so
-    // long lines stay on screen. A render offset would push them past the edge.
-    void MoveSpeechLine(URichTextBlock Line, float32 Offset)
-    {
-        auto VerticalBox = Cast<UVerticalBoxSlot>(Line.Slot);
-        auto Overlay = Cast<UOverlaySlot>(Line.Slot);
-        auto Border = Cast<UBorderSlot>(Line.Slot);
-        auto SizeBox = Cast<USizeBoxSlot>(Line.Slot);
-
-        if (IsValid(VerticalBox))
-            VerticalBox.SetPadding(WithLeft(VerticalBox.GetPadding(), Offset));
-        else if (IsValid(Overlay))
-            Overlay.SetPadding(WithLeft(Overlay.GetPadding(), Offset));
-        else if (IsValid(Border))
-            Border.SetPadding(WithLeft(Border.GetPadding(), Offset));
-        else if (IsValid(SizeBox))
-            SizeBox.SetPadding(WithLeft(SizeBox.GetPadding(), Offset));
-        else
-            MoveTo(Line, Offset);
-    }
-
-    FMargin WithLeft(FMargin Padding, float32 Left)
-    {
-        FMargin Result = Padding;
-        Result.Left = Left;
-        return Result;
     }
 }
