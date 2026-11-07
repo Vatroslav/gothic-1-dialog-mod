@@ -1,8 +1,8 @@
 # Gothic 1 Remake: Dialog Options Offset
 
-A small script-only mod for Gothic 1 Remake that moves the dialog option lists to the right, so they don't start so far left on ultrawide screens.
+A small script-only mod for Gothic 1 Remake that moves the dialog option lists and left-aligned speech to the right, so they don't start so far left on ultrawide screens. Centered speech stays where it is.
 
-Adjust it in `Settings > Game > Dialog Options Offset`. The value is a percentage of the screen width; 0 keeps the game's original position.
+Adjust it in `Settings > Game > Dialog Options Offset`. The value is a percentage of the screen width; 0 keeps the original position.
 
 ## Install
 
