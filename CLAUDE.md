@@ -11,3 +11,7 @@ Script-only ModKit mod. `DialogOptionsOffset/` is the mod package; only that fol
 - Only Vatra can confirm the mod works, by seeing it in his game.
 - Scope is one adjustable horizontal offset. No centering, styling or extra features unless Vatra asks.
 - Other mods' code is a reference only: don't copy it without checking its license.
+
+## Shared how-to
+
+How Gothic 1 Remake mods are built here (ModKit, hooks, settings, GAS patterns, checks, install), in Croatian: `~/github/game-development/knowledge-base/gothic-1-remake-modovi.md`. Read it before changing this mod or starting a new one, and add new lessons there, not here.
